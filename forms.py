@@ -2,10 +2,16 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import *
 
-from datetime import datetime
-
 list_header_table_service = ("Ф.И.О.", "Отдел", "Должность", "Опыт работы", "Образование", "Дата начала работы",
                              "Дата окончания работы", "Телефон")
+
+
+class FormID:
+    FAP = 1  ##Form Add Position
+    FAE = 2  ##Form Add Employee
+    FAD = 3  ##Form Add Department
+    FMP = 4  ##Form Main Page
+    FTB = 5  ##Form Table Position
 
 
 class FormAddPosition(QWidget):
@@ -34,6 +40,10 @@ class FormAddPosition(QWidget):
         main_layout_vbox.addStretch(1)
         main_layout_vbox.addLayout(hbox_button)
 
+    def clear(self):
+        self.edit_name.clear()
+        self.edit_about.clear()
+
 
 class FormAddDepartment(QWidget):
     """Форма добавления отделов"""
@@ -61,6 +71,10 @@ class FormAddDepartment(QWidget):
         main_layout_vbox.addWidget(QLabel("<span style='color: red;'>*</span> – поля, обязательные к заполнению"))
         main_layout_vbox.addStretch(1)
         main_layout_vbox.addLayout(hbox_button)
+
+    def clear(self):
+        self.edit_department.clear()
+        self.edit_phone.clear()
 
 
 class FormAddEmployee(QWidget):
@@ -123,8 +137,9 @@ class FormAddEmployee(QWidget):
         main_layout_vbox.addLayout(hbox_button)
         main_layout_vbox.addStretch(1)
 
-        # self.setWidget(widget)
-        # self.setWidgetResizable(True)
+    def clear(self):
+        self.edit_name.clear()
+        ### ...
 
 
 class FormLogin(QWidget):
@@ -193,7 +208,7 @@ class MainPage(QWidget):
         # vbox_main.setSpacing()
 
 
-class PageTableService(QWidget):
+class FormTableService(QWidget):
     def __init__(self):
         super().__init__()
         main_vbox = QVBoxLayout(self)
@@ -226,22 +241,42 @@ class FormTablePositions(QWidget):
         self.table_position = QTableWidget()
         self.table_position.setColumnCount(3)
         self.table_position.setHorizontalHeaderLabels(("Код должности", "Должность", "Описание"))
-        # self.table_position.setSelectionBehavior(QAbstractItemView.SelectRows)
-        try:
-            self.table_position.cellPressed.connect(self.change_state_actions)
-        except Exception as e:
-            print(e)
-        self.table_position.setRowCount(1)
-        self.table_position.setItem(0, 0, QTableWidgetItem("1"))
-        self.table_position.setItem(0, 1, QTableWidgetItem("Директор"))
+        self.table_position.itemSelectionChanged.connect(self.change_state_actions)
+        self.table_position.setSelectionBehavior(QAbstractItemView.SelectRows)
+        # self.table_position.setSortingEnabled(True)
 
         vbox_main.addWidget(self.tool_bar)
         vbox_main.addWidget(self.table_position)
 
     def change_state_actions(self, row=None, col=None):
-        row = self.table_position.currentRow()
-        col = self.table_position.currentColumn()
-        print(row, col)
-        if row != -1 and col != -1:
+        if self.table_position.selectedItems():
             self.tool_bar.action_del.setDisabled(False)
             self.tool_bar.action_edit.setDisabled(False)
+        else:
+            self.tool_bar.action_del.setDisabled(True)
+            self.tool_bar.action_edit.setDisabled(True)
+
+
+class EditPositionDialog(QDialog):
+    def __init__(self, position=None, about=None):
+        super().__init__()
+        self.setWindowTitle("Редактирование '{}'".format(position))
+        vbox = QVBoxLayout(self)
+        self.form = FormAddPosition()
+        self.form.edit_name.setText(position)
+        self.form.edit_about.setText(about)
+        self.form.button_save.clicked.connect(self.click_button_save)
+        self.form.button_cancel.clicked.connect(self.reject)
+        vbox.addWidget(self.form)
+
+    def click_button_save(self):
+        if self.return_position():
+            self.accept()
+        else:
+            self.form.edit_name.setFocus()
+
+    def return_position(self):
+        return self.form.edit_name.text()
+
+    def return_about(self):
+        return self.form.edit_about.toPlainText()

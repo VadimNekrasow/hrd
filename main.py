@@ -24,6 +24,7 @@ class Window(QMainWindow):
         self.form_main_page = MainPage()
         self.form_main_page.link_add_employee.linkActivated.connect(self.new_tab_add_employee)
         self.form_main_page.link_position.linkActivated.connect(self.new_tab_positions)
+        self.form_main_page.link_add_postion.linkActivated.connect(self.new_tab_add_positions)
         self.form_add_employee = FormAddEmployee()
 
         self.tab_widget = QTabWidget()
@@ -54,10 +55,57 @@ class Window(QMainWindow):
         index = self.tab_widget.addTab(form, "Добавить сотрудника")
         self.tab_widget.setCurrentIndex(index)
 
+    def new_tab_add_positions(self):
+        form = FormAddPosition()
+        form.setAttribute(Qt.WA_DeleteOnClose)
+        form.button_save.clicked.connect(lambda: self.save_new_position(form))
+
+        index = self.tab_widget.addTab(form, "Добавить должность")
+        self.tab_widget.setCurrentIndex(index)
+
     def new_tab_positions(self):
         form = FormTablePositions()
+        form.tool_bar.action_edit.triggered.connect(lambda:
+                                                    self.open_dialog_edit_position(form))
+        form.tool_bar.action_add.triggered.connect(self.new_tab_add_positions)
+        form.tool_bar.action_del.triggered.connect(lambda: self.delete_position(form))
         index = self.tab_widget.addTab(form, "Должности")
+        self.reboot_table_positions(form)
+        # self.list_positions = self.database.get_positions()
+
+        # for line in self.list_positions:
+        #    form.table_position.setRowCount(form.table_position.rowCount() + 1)
+        #    row_count = form.table_position.rowCount()
+        #    form.table_position.setItem(row_count - 1, 0, QTableWidgetItem(str(line[0])))
+        #    form.table_position.setItem(row_count - 1, 1, QTableWidgetItem(str(line[1])))
+        #    form.table_position.setItem(row_count - 1, 2, QTableWidgetItem(str(line[2])))
+
+        # form.table_position.resizeColumnsToContents()
+
         self.tab_widget.setCurrentIndex(index)
+
+    def open_dialog_edit_position(self, form: FormTablePositions):
+        index = form.table_position.currentRow()
+        dialog = EditPositionDialog(self.list_positions[index][1], self.list_positions[index][2])
+
+        if dialog.exec() == QDialog.Accepted:
+            position = dialog.return_position()
+            about = dialog.return_about()
+            id = self.list_positions[index][0]
+            if self.database.change_position(id, position, about):
+                self.show_message_box("Редактирование должности", "Запись успешно обновлена", QMessageBox.Information)
+                self.reboot_table_positions(form)
+
+    def reboot_table_positions(self, form: FormTablePositions):
+        form.table_position.setRowCount(0)
+        self.list_positions = self.database.get_positions()
+        for line in self.list_positions:
+            form.table_position.setRowCount(form.table_position.rowCount() + 1)
+            row_count = form.table_position.rowCount()
+            form.table_position.setItem(row_count - 1, 0, QTableWidgetItem(str(line[0])))
+            form.table_position.setItem(row_count - 1, 1, QTableWidgetItem(str(line[1])))
+            form.table_position.setItem(row_count - 1, 2, QTableWidgetItem(str(line[2])))
+        form.table_position.resizeColumnsToContents()
 
     def save_new_employee(self, form: FormAddEmployee):
         name = form.edit_name.text()
@@ -98,11 +146,42 @@ class Window(QMainWindow):
         if id_emp:
             self.database.new_employee_personal(id_emp, birth, passport, address, address_registration)
 
+    def save_new_position(self, form: FormAddPosition):
+        position = form.edit_name.text()
+        about = form.edit_about.toPlainText()
+
+        if not position:
+            self.show_message_box("Внимание", "Заполните поле 'Должность'", QMessageBox.Warning)
+            return
+
+        state = self.database.new_position(position, about)
+        if state:
+            self.show_message_box("Добавление должности", "Должность '{}' добавлена".format(position),
+                                  QMessageBox.Information)
+            form.clear()
+        else:
+            self.show_message_box("Ошибка. Добавление должности", "Произошла ошибка", QMessageBox.Warning)
+
+    def delete_position(self, form: FormTablePositions):
+        id = self.list_positions[form.table_position.currentRow()][0]
+        state = self.database.delete_position(id)
+        title = self.list_positions[form.table_position.currentRow()][1]
+        if state:
+            self.show_message_box("Удаление '{}'".format(title), "Дожность '{}' удалена".format(title),
+                                  QMessageBox.Information)
+            self.reboot_table_positions(form)
+        else:
+            self.show_message_box("Ошибка", "Дожность '{}' не была удалена".format(title),
+                                  QMessageBox.Information)
+
     def reboot_form_add_employee(self, form: FormAddEmployee):
         pass
 
     def close_tab(self, index):
         self.tab_widget.removeTab(index)
+
+    def show_message_box(self, title, body, type):
+        QMessageBox(type, title, body, QMessageBox.Ok).exec()
 
 
 if __name__ == '__main__':
