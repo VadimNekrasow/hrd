@@ -59,6 +59,9 @@ class Database:
             self.connect.commit()
         except sqlite3.Error as error:
             print('Database.new_employee_personal() commit 2>>>', error)
+            return False
+        else:
+            return True
 
     def new_position(self, position, about):
         try:

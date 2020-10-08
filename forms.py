@@ -11,14 +11,22 @@ class FormID:
     FAE = 2  ##Form Add Employee
     FAD = 3  ##Form Add Department
     FMP = 4  ##Form Main Page
-    FTB = 5  ##Form Table Position
+    FTP = 5  ##Form Table Position
 
 
-class FormAddPosition(QWidget):
+class FormIdMixin:
+    form_id = None
+
+    def get_form_id(self):
+        return self.form_id
+
+
+class FormAddPosition(QWidget, FormIdMixin):
     """Форма добавления должности"""
 
     def __init__(self):
         super().__init__()
+        self.form_id = FormID.FAP
         main_layout_vbox = QVBoxLayout(self)
 
         self.edit_name = QLineEdit()
@@ -45,11 +53,12 @@ class FormAddPosition(QWidget):
         self.edit_about.clear()
 
 
-class FormAddDepartment(QWidget):
+class FormAddDepartment(QWidget, FormIdMixin):
     """Форма добавления отделов"""
 
     def __init__(self):
         super().__init__()
+        self.form_id = FormID.FAD
         main_layout_vbox = QVBoxLayout(self)
         self.edit_department = QLineEdit()
         self.combobox_chief = QComboBox()
@@ -77,43 +86,68 @@ class FormAddDepartment(QWidget):
         self.edit_phone.clear()
 
 
-class FormAddEmployee(QWidget):
+class FormAddEmployee(QWidget, FormIdMixin):
     """Форма добавления работников"""
 
     def __init__(self):
         super().__init__()
-
-        # widget = QWidget()
+        self.form_id = FormID.FAE
         main_layout_vbox = QVBoxLayout(self)
         # main_layout_vbox.setContentsMargins(0, 0, 0, 0)
         self.edit_name = QLineEdit()
         self.combobox_department = QComboBox()
+        self.button_add_department = ButtonIcon('icons/new.ico')
         self.combobox_position = QComboBox()
+        self.button_add_position = ButtonIcon('icons/new.ico')
         self.edit_experience = QSpinBox()
         self.edit_education = QLineEdit()
         self.edit_start_date = QDateEdit()
+        self.button_open_calendar_dialog_start = ButtonIcon('icons/calendar.ico')
+        self.button_open_calendar_dialog_start.setObjectName("start")
         self.edit_end_date = QDateEdit()
         self.edit_phone = QLineEdit()
         self.edit_phone.setInputMask("+7 (999) 999-99-99;_")
 
+        hbox_line_position = QHBoxLayout()
+        hbox_line_position.addWidget(self.combobox_position, 1)
+        hbox_line_position.addWidget(self.button_add_position, 0)
+        hbox_line_position.setSpacing(1)
+
+        hbox_line_department = QHBoxLayout()
+        hbox_line_department.addWidget(self.combobox_department, 1)
+        hbox_line_department.addWidget(self.button_add_department, 0)
+        hbox_line_department.setSpacing(1)
+
+        hbox_line_start_date = QHBoxLayout()
+        hbox_line_start_date.setSpacing(0)
+        hbox_line_start_date.addWidget(self.edit_start_date, 1)
+        hbox_line_start_date.addWidget(self.button_open_calendar_dialog_start, 0)
+
         form_layout_service = QFormLayout()
         form_layout_service.addRow("Имя <span style='color: red;'>*</span>", self.edit_name)
-        form_layout_service.addRow("Отдел <span style='color: red;'>*</span>", self.combobox_department)
-        form_layout_service.addRow("Должность <span style='color: red;'>*</span>", self.combobox_position)
+        form_layout_service.addRow("Отдел <span style='color: red;'>*</span>", hbox_line_department)
+        form_layout_service.addRow("Должность <span style='color: red;'>*</span>", hbox_line_position)
         form_layout_service.addRow("Опыт работы <span style='color: red;'>*</span>", self.edit_experience)
         form_layout_service.addRow("Образование <span style='color: red;'>*</span>", self.edit_education)
-        form_layout_service.addRow("Дата начала работы <span style='color: red;'>*</span>", self.edit_start_date)
+        form_layout_service.addRow("Дата начала работы <span style='color: red;'>*</span>", hbox_line_start_date)
         # form_layout_service.addRow("Дата завершения работы", self.edit_end_date)
         form_layout_service.addRow("Номер телефона <span style='color: red;'>*</span>", self.edit_phone)
 
         self.edit_birth = QDateEdit()
+        self.button_open_calendar_dialog_birth = ButtonIcon('icons/calendar.ico')
+        self.button_open_calendar_dialog_birth.setObjectName('birth')
         self.edit_passport = QLineEdit()
         self.edit_passport.setInputMask("99 99 999999;_")
         self.edit_address = QLineEdit()
         self.edit_registration_address = QLineEdit()
 
+        hbox_line_birth = QHBoxLayout()
+        hbox_line_birth.setSpacing(0)
+        hbox_line_birth.addWidget(self.edit_birth, 1)
+        hbox_line_birth.addWidget(self.button_open_calendar_dialog_birth, 0)
+
         form_layout_personal = QFormLayout()
-        form_layout_personal.addRow("Дата рождения", self.edit_birth)
+        form_layout_personal.addRow("Дата рождения", hbox_line_birth)
         form_layout_personal.addRow("Номер паспорта", self.edit_passport)
         form_layout_personal.addRow("Адрес проживания", self.edit_address)
         form_layout_personal.addRow("Адрес регистрации", self.edit_registration_address)
@@ -139,7 +173,17 @@ class FormAddEmployee(QWidget):
 
     def clear(self):
         self.edit_name.clear()
-        ### ...
+        self.combobox_department.setCurrentIndex(0)
+        self.combobox_position.setCurrentIndex(0)
+        self.edit_experience.clear()
+        self.edit_education.clear()
+        self.edit_start_date.clear()
+        self.edit_phone.clear()
+
+        self.edit_birth.clear()
+        self.edit_passport.clear()
+        self.edit_address.clear()
+        self.edit_registration_address.clear()
 
 
 class FormLogin(QWidget):
@@ -169,15 +213,14 @@ class FormLogin(QWidget):
         vboxLogin.addStretch(5)
 
 
-class MainPage(QWidget):
+class MainPage(QWidget, FormIdMixin):
     def __init__(self):
         super().__init__()
 
+        self.form_id = FormID.FMP
+
         vbox_main = QVBoxLayout(self)
         vbox_main.setContentsMargins(1, 1, 1, 1)
-
-        grid_main = QGridLayout(self)
-        grid_main.setContentsMargins(1, 1, 1, 1)
 
         self.link_service_information = QLabel("<a href='#'>Сотрудники. Служебная информация</a>")
         self.link_add_employee = QLabel("<a href='#'>Добавить сотрудника</a>")
@@ -208,7 +251,7 @@ class MainPage(QWidget):
         # vbox_main.setSpacing()
 
 
-class FormTableService(QWidget):
+class FormTableService(QWidget, FormIdMixin):
     def __init__(self):
         super().__init__()
         main_vbox = QVBoxLayout(self)
@@ -232,11 +275,11 @@ class VToolBar(QToolBar):
         self.setFloatable(True)
 
 
-class FormTablePositions(QWidget):
+class FormTablePositions(QWidget, FormIdMixin):
     def __init__(self):
         super().__init__()
+        self.form_id = FormID.FTP
         vbox_main = QVBoxLayout(self)
-
         self.tool_bar = VToolBar()
         self.table_position = QTableWidget()
         self.table_position.setColumnCount(3)
@@ -280,3 +323,33 @@ class EditPositionDialog(QDialog):
 
     def return_about(self):
         return self.form.edit_about.toPlainText()
+
+
+class ButtonIcon(QPushButton):
+    def __init__(self, icon_path, text=''):
+        super().__init__()
+        self.setIcon(QIcon(icon_path))
+        self.setText(text)
+        self.setFlat(True)
+        self.setCursor(QCursor(Qt.PointingHandCursor))
+
+class CalendarDialog(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Выберите дату")
+        vbox = QVBoxLayout(self)
+        self.calendar = QCalendarWidget()
+        button_save = QPushButton("Ок")
+        button_save.clicked.connect(self.accept)
+        button_cancel = QPushButton('Отмена')
+        button_cancel.clicked.connect(self.reject)
+        vbox.addWidget(self.calendar)
+        hbox = QHBoxLayout()
+        hbox.addStretch(1)
+        hbox.addWidget(button_save)
+        hbox.addWidget(button_cancel)
+        vbox.addLayout(hbox)
+
+
+    def get_date(self):
+        return self.calendar.selectedDate()
