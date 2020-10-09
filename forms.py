@@ -12,6 +12,7 @@ class FormID:
     FAD = 3  ##Form Add Department
     FMP = 4  ##Form Main Page
     FTP = 5  ##Form Table Position
+    FTD = 6  ##Form Table Department
 
 
 class FormIdMixin:
@@ -27,6 +28,7 @@ class FormAddPosition(QWidget, FormIdMixin):
     def __init__(self):
         super().__init__()
         self.form_id = FormID.FAP
+        self.setAttribute(Qt.WA_DeleteOnClose)
         main_layout_vbox = QVBoxLayout(self)
 
         self.edit_name = QLineEdit()
@@ -59,14 +61,15 @@ class FormAddDepartment(QWidget, FormIdMixin):
     def __init__(self):
         super().__init__()
         self.form_id = FormID.FAD
+        self.setAttribute(Qt.WA_DeleteOnClose)
         main_layout_vbox = QVBoxLayout(self)
         self.edit_department = QLineEdit()
-        self.combobox_chief = QComboBox()
+        self.edit_chief = QLineEdit()
         self.edit_phone = QLineEdit()
 
         form_layout = QFormLayout()
         form_layout.addRow("Отдел <span style='color: red;'>*</span>", self.edit_department)
-        form_layout.addRow("Начальник <span style='color: red;'>*</span>", self.combobox_chief)
+        form_layout.addRow("Начальник", self.edit_chief)
         form_layout.addRow("Телефон", self.edit_phone)
 
         self.button_save = QPushButton("Сохранить")
@@ -83,6 +86,7 @@ class FormAddDepartment(QWidget, FormIdMixin):
 
     def clear(self):
         self.edit_department.clear()
+        self.edit_chief.clear()
         self.edit_phone.clear()
 
 
@@ -92,6 +96,7 @@ class FormAddEmployee(QWidget, FormIdMixin):
     def __init__(self):
         super().__init__()
         self.form_id = FormID.FAE
+        self.setAttribute(Qt.WA_DeleteOnClose)
         main_layout_vbox = QVBoxLayout(self)
         # main_layout_vbox.setContentsMargins(0, 0, 0, 0)
         self.edit_name = QLineEdit()
@@ -189,6 +194,7 @@ class FormAddEmployee(QWidget, FormIdMixin):
 class FormLogin(QWidget):
     def __init__(self):
         super().__init__()
+        self.setAttribute(Qt.WA_DeleteOnClose)
         vboxLogin = QVBoxLayout(self)
         self.editLogin = QLineEdit()
         self.editLogin.setMinimumWidth(150)
@@ -218,6 +224,7 @@ class MainPage(QWidget, FormIdMixin):
         super().__init__()
 
         self.form_id = FormID.FMP
+        self.setAttribute(Qt.WA_DeleteOnClose)
 
         vbox_main = QVBoxLayout(self)
         vbox_main.setContentsMargins(1, 1, 1, 1)
@@ -254,6 +261,7 @@ class MainPage(QWidget, FormIdMixin):
 class FormTableService(QWidget, FormIdMixin):
     def __init__(self):
         super().__init__()
+        self.setAttribute(Qt.WA_DeleteOnClose)
         main_vbox = QVBoxLayout(self)
         self.table_service = QTableWidget()
         self.table_service.setColumnCount(len(list_header_table_service))
@@ -264,6 +272,7 @@ class FormTableService(QWidget, FormIdMixin):
 class VToolBar(QToolBar):
     def __init__(self):
         super().__init__()
+        self.setAttribute(Qt.WA_DeleteOnClose)
         self.action_add = self.addAction("Создать")
         self.action_add.setIcon(QIcon("icons/add.ico"))
         self.action_edit = self.addAction("Редактировать")
@@ -279,6 +288,7 @@ class FormTablePositions(QWidget, FormIdMixin):
     def __init__(self):
         super().__init__()
         self.form_id = FormID.FTP
+        self.setAttribute(Qt.WA_DeleteOnClose)
         vbox_main = QVBoxLayout(self)
         self.tool_bar = VToolBar()
         self.table_position = QTableWidget()
@@ -298,6 +308,30 @@ class FormTablePositions(QWidget, FormIdMixin):
         else:
             self.tool_bar.action_del.setDisabled(True)
             self.tool_bar.action_edit.setDisabled(True)
+
+class FormTableDepartments(QWidget, FormIdMixin):
+    def __init__(self):
+        super().__init__()
+        self.form_id = FormID.FTD
+        self.tool_bar = VToolBar()
+        self.table = QTableWidget()
+        self.table.setColumnCount(4)
+        self.table.setHorizontalHeaderLabels(("Код отдела", "Отдел", "Начальник", "Телефон"))
+        self.table.itemSelectionChanged.connect(self.change_state_actions)
+        self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        vbox = QVBoxLayout(self)
+        vbox.addWidget(self.tool_bar)
+        vbox.addWidget(self.table)
+
+
+    def change_state_actions(self, row=None, col=None):
+        if self.table.selectedItems():
+            self.tool_bar.action_del.setDisabled(False)
+            self.tool_bar.action_edit.setDisabled(False)
+        else:
+            self.tool_bar.action_del.setDisabled(True)
+            self.tool_bar.action_edit.setDisabled(True)
+
 
 
 class EditPositionDialog(QDialog):
@@ -324,6 +358,30 @@ class EditPositionDialog(QDialog):
     def return_about(self):
         return self.form.edit_about.toPlainText()
 
+class EditDepartmentDialog(QDialog):
+    def __init__(self, department=None, chief=None, phone=None):
+        super().__init__()
+        self.setWindowTitle("Редактирование '{}'".format(department))
+        self.form = FormAddDepartment()
+        self.form.edit_department.setText(department)
+        self.form.edit_chief.setText(chief)
+        self.form.edit_phone.setText(phone)
+
+    def click_button_save(self):
+        if self.get_department():
+            self.accept()
+        else:
+            self.form.edit_department.setFocus()
+
+    def get_department(self):
+        return self.form.edit_department.text()
+
+    def get_chief(self):
+        return self.form.edit_chief.text()
+
+    def get_phone(self):
+        return self.form.edit_phone.text()
+
 
 class ButtonIcon(QPushButton):
     def __init__(self, icon_path, text=''):
@@ -332,6 +390,7 @@ class ButtonIcon(QPushButton):
         self.setText(text)
         self.setFlat(True)
         self.setCursor(QCursor(Qt.PointingHandCursor))
+
 
 class CalendarDialog(QDialog):
     def __init__(self):
@@ -349,7 +408,6 @@ class CalendarDialog(QDialog):
         hbox.addWidget(button_save)
         hbox.addWidget(button_cancel)
         vbox.addLayout(hbox)
-
 
     def get_date(self):
         return self.calendar.selectedDate()

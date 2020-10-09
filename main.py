@@ -15,7 +15,6 @@ def print_d(*element, end='\n'):
     if DEBUG:
         print(*element, end=end)
 
-
 class Window(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -32,6 +31,7 @@ class Window(QMainWindow):
         self.form_main_page.link_add_employee.linkActivated.connect(self.new_tab_add_employee)
         self.form_main_page.link_position.linkActivated.connect(self.new_tab_positions)
         self.form_main_page.link_add_postion.linkActivated.connect(self.new_tab_add_positions)
+        self.form_main_page.link_add_department.linkActivated.connect(self.new_tab_add_department)
         self.form_add_employee = FormAddEmployee()
 
         self.tab_widget = QTabWidget()
@@ -51,27 +51,31 @@ class Window(QMainWindow):
 
     def new_tab_add_employee(self):
         form = FormAddEmployee()
-        form.setAttribute(Qt.WA_DeleteOnClose)
         form.button_save.clicked.connect(self.save_new_employee)
-        form.button_add_department.clicked.connect(lambda: print(123))
+        form.button_add_department.clicked.connect(self.new_tab_add_department)
         form.button_add_position.clicked.connect(self.new_tab_add_positions)
         form.button_open_calendar_dialog_start.clicked.connect(self.open_calendar_dialog)
         form.button_open_calendar_dialog_birth.clicked.connect(self.open_calendar_dialog)
 
-        #self.list_positions = self.database.get_positions()
-        #self.list_departments = self.database.get_departments()
+        # self.list_positions = self.database.get_positions()
+        # self.list_departments = self.database.get_departments()
 
-        #form.combobox_position.addItems([i[1] for i in self.list_positions])
-        #form.combobox_department.addItems(i[1] for i in self.list_departments)
+        # form.combobox_position.addItems([i[1] for i in self.list_positions])
+        # form.combobox_department.addItems(i[1] for i in self.list_departments)
 
         index = self.tab_widget.addTab(form, "Добавить сотрудника")
         self.tab_widget.setCurrentIndex(index)
 
     def new_tab_add_positions(self):  # Новая вкладка. Добавление должности
         form = FormAddPosition()
-        form.setAttribute(Qt.WA_DeleteOnClose)
         form.button_save.clicked.connect(self.save_new_position)
         index = self.tab_widget.addTab(form, "Добавить должность")
+        self.tab_widget.setCurrentIndex(index)
+
+    def new_tab_add_department(self):
+        form = FormAddDepartment()
+        form.button_save.clicked.connect(self.save_new_department)
+        index = self.tab_widget.addTab(form, "Добавить отдел")
         self.tab_widget.setCurrentIndex(index)
 
     def new_tab_positions(self):  # Новая вкладка. Таблица должности
@@ -82,6 +86,10 @@ class Window(QMainWindow):
         index = self.tab_widget.addTab(form, "Должности")
         # self.reboot_table_positions(form)
         self.tab_widget.setCurrentIndex(index)
+
+    def new_tab_table_departments(self):
+        #form = FormTa
+        pass
 
     def open_dialog_edit_position(self, form: FormTablePositions = None):
         form = self.tab_widget.currentWidget()
@@ -95,6 +103,9 @@ class Window(QMainWindow):
             if self.database.change_position(id, position, about):
                 self.show_message_box("Редактирование должности", "Запись успешно обновлена", QMessageBox.Information)
                 self.reboot_table_positions(form)
+            else:
+                self.show_message_box("Редактирование должности", "Должность '{}' не обновлена".format(position),
+                                      QMessageBox.Warning)
 
     def reboot_table_positions(self, form: FormTablePositions):  # Обновляет данные в таблице Должности
         print_d('reboot_table_positions(self, form: FormTablePositions)')
@@ -175,6 +186,24 @@ class Window(QMainWindow):
         else:
             self.show_message_box("Ошибка. Добавление должности", "Произошла ошибка", QMessageBox.Warning)
 
+    def save_new_department(self, form: FormAddDepartment = None):
+        form = self.tab_widget.currentWidget()
+        department = form.edit_department.text()
+        chief = form.edit_chief.text() if form.edit_chief.text() else None
+        phone = form.edit_phone.text() if form.edit_phone.text() else None
+
+        if not department:
+            self.show_message_box("Внимание", "Заполните обязательные поля", QMessageBox.Warning)
+            return
+
+        state = self.database.new_department(department, chief, phone)
+        if state:
+            self.show_message_box("Добавление отдела", "Отдел '{}' добавлен".format(department),
+                                  QMessageBox.Information)
+            form.clear()
+        else:
+            self.show_message_box("Ошибка. Добавление отдела", "Произошла ошибка", QMessageBox.Warning)
+
     def change_current_tab(self, index):
         form = self.tab_widget.widget(index)
         if form.form_id == FormID.FTP:
@@ -204,6 +233,8 @@ class Window(QMainWindow):
                                   QMessageBox.Information)
 
     def close_tab(self, index):
+        form = self.tab_widget.widget(index)
+        form.close()
         self.tab_widget.removeTab(index)
 
     def show_message_box(self, title, body, type):

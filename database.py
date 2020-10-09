@@ -73,13 +73,24 @@ class Database:
         else:
             return True
 
+    def new_department(self, department, chief, phone):
+        try:
+            self.cursor.execute("INSERT INTO departments (DEPARTMENT, CHIEF, PHONES) VALUES (?, ?, ?)",
+                                (department, chief, phone))
+            self.connect.commit()
+        except sqlite3.Error as error:
+            print(error)
+            return False
+        else:
+            return True
+
     def change_position(self, id, position, about):
         try:
             self.cursor.execute(
                 "UPDATE positions SET NAME = '{}', ABOUT = '{}' WHERE ID = {}".format(position, about, id))
             self.connect.commit()
         except sqlite3.Error as error:
-            print(print('Database.change_position>>>', error))
+            print('Database.change_position>>>', error)
             return False
         else:
             return True
