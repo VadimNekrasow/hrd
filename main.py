@@ -15,9 +15,24 @@ def print_d(*element, end='\n'):
     if DEBUG:
         print(*element, end=end)
 
+
 class Window(QMainWindow):
     def __init__(self):
         super().__init__()
+
+        #palette = QPalette()
+        #palette.setColor(QPalette.Window, QColor(53, 53, 53))
+        #palette.setColor(QPalette.WindowText, Qt.white)
+        #self.setPalette(palette)
+
+        # self.setStyleSheet("""
+        #     color:white;
+        #     background-color: rgb(53,53,53);
+        #
+        # """)
+
+        #qApp.setStyle('window')
+
         self.database = Database()
         self.list_positions = []
         self.list_departments = []
@@ -48,6 +63,8 @@ class Window(QMainWindow):
 
         self.central_widget.setCurrentIndex(1)
         self.resize(640, 480)
+
+
 
     def new_tab_add_employee(self):
         form = FormAddEmployee()
@@ -84,11 +101,10 @@ class Window(QMainWindow):
         form.tool_bar.action_add.triggered.connect(self.new_tab_add_positions)
         form.tool_bar.action_del.triggered.connect(self.delete_position)
         index = self.tab_widget.addTab(form, "Должности")
-        # self.reboot_table_positions(form)
         self.tab_widget.setCurrentIndex(index)
 
     def new_tab_table_departments(self):
-        #form = FormTa
+        # form = FormTa
         pass
 
     def open_dialog_edit_position(self, form: FormTablePositions = None):
@@ -249,7 +265,7 @@ class Window(QMainWindow):
 
     def open_calendar_dialog(self):
         form = self.tab_widget.currentWidget()
-        dialog = CalendarDialog()
+        dialog = CalendarDialog(self)
         if dialog.exec() == QDialog.Accepted:
             object_name = self.sender().objectName()
             date = dialog.get_date()
@@ -261,6 +277,7 @@ class Window(QMainWindow):
 
 if __name__ == '__main__':
     app = QApplication([])
+    app.setStyle('Fusion')
     window = Window()
     window.show()
     sys.exit(app.exec())
