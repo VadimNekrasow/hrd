@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QTranslator
 from PyQt5.QtGui import *
 
 list_header_table_service = ("Ф.И.О.", "Отдел", "Должность", "Опыт работы", "Образование", "Дата начала работы",
@@ -90,7 +90,7 @@ class FormAddDepartment(QWidget, FormIdMixin):
         self.edit_phone.clear()
 
 
-class Fdfasdfasdfasdfsdf(QWidget, FormIdMixin):
+class FormTest(QWidget, FormIdMixin):
     """Форма добавления работников"""
 
     def __init__(self):
@@ -106,67 +106,16 @@ class Fdfasdfasdfasdfsdf(QWidget, FormIdMixin):
         self.edit_start_date = QDateEdit()
         self.edit_education = QLineEdit()
 
-        form_layout_service = QFormLayout()
-        form_layout_service.addRow("Ф.И.О", self.edit_name)
-        form_layout_service.addRow("Дата рождения", self.edit_birth)
-        form_layout_service.addRow("Паспорт", self.edit_passport)
-        form_layout_service.addRow("Дата принятия на работу", self.edit_start_date)
-        form_layout_service.addRow("Образование", self.edit_education)
+        form_layout = QFormLayout()
+        form_layout.addRow("Ф.И.О", self.edit_name)
+        form_layout.addRow("Дата рождения", self.edit_birth)
+        form_layout.addRow("Паспорт", self.edit_passport)
+        form_layout.addRow("Дата принятия на работу", self.edit_start_date)
+        form_layout.addRow("Образование", self.edit_education)
 
-        # self.combobox_department = QComboBox()
-        # self.button_add_department = ButtonIcon('icons/new.ico')
-        # self.combobox_position = QComboBox()
-        # self.button_add_position = ButtonIcon('icons/new.ico')
-        # self.edit_experience = QSpinBox()
-        #
-        # self.button_open_calendar_dialog_start = ButtonIcon('icons/calendar.ico')
-        # self.button_open_calendar_dialog_start.setObjectName("start")
-        # self.edit_end_date = QDateEdit()
-        # self.edit_phone = QLineEdit()
-        # self.edit_phone.setInputMask("+7 (999) 999-99-99;_")
-        #
-        # hbox_line_position = QHBoxLayout()
-        # hbox_line_position.addWidget(self.combobox_position, 1)
-        # hbox_line_position.addWidget(self.button_add_position, 0)
-        # hbox_line_position.setSpacing(1)
-        #
-        # hbox_line_department = QHBoxLayout()
-        # hbox_line_department.addWidget(self.combobox_department, 1)
-        # hbox_line_department.addWidget(self.button_add_department, 0)
-        # hbox_line_department.setSpacing(1)
-        #
-        # hbox_line_start_date = QHBoxLayout()
-        # hbox_line_start_date.setSpacing(0)
-        # hbox_line_start_date.addWidget(self.edit_start_date, 1)
-        # hbox_line_start_date.addWidget(self.button_open_calendar_dialog_start, 0)
-        #
-        #
-        # # form_layout_service.addRow("Имя <span style='color: red;'>*</span>", self.edit_name)
-        # # form_layout_service.addRow("Отдел <span style='color: red;'>*</span>", hbox_line_department)
-        # # form_layout_service.addRow("Должность <span style='color: red;'>*</span>", hbox_line_position)
-        # # form_layout_service.addRow("Опыт работы <span style='color: red;'>*</span>", self.edit_experience)
-        # # form_layout_service.addRow("Образование <span style='color: red;'>*</span>", self.edit_education)
-        # # form_layout_service.addRow("Дата начала работы <span style='color: red;'>*</span>", hbox_line_start_date)
-        # # # form_layout_service.addRow("Дата завершения работы", self.edit_end_date)
-        # # form_layout_service.addRow("Номер телефона <span style='color: red;'>*</span>", self.edit_phone)
-        #
-        # self.button_open_calendar_dialog_birth = ButtonIcon('icons/calendar.ico')
-        # self.button_open_calendar_dialog_birth.setObjectName('birth')
-        #
-        # self.edit_address = QLineEdit()
-        # self.edit_registration_address = QLineEdit()
-        #
-        # hbox_line_birth = QHBoxLayout()
-        # hbox_line_birth.setSpacing(0)
-        # hbox_line_birth.addWidget(self.edit_birth, 1)
-        # hbox_line_birth.addWidget(self.button_open_calendar_dialog_birth, 0)
-        #
-        # form_layout_personal = QFormLayout()
-        # form_layout_personal.addRow("Дата рождения", hbox_line_birth)
-        # form_layout_personal.addRow("Номер паспорта", self.edit_passport)
-        # form_layout_personal.addRow("Адрес проживания", self.edit_address)
-        # form_layout_personal.addRow("Адрес регистрации", self.edit_registration_address)
-        #
+
+
+
         self.button_save = QPushButton("Сохранить")
         self.button_cancel = QPushButton("Отмена")
         hbox_button = QHBoxLayout()
@@ -174,13 +123,17 @@ class Fdfasdfasdfasdfsdf(QWidget, FormIdMixin):
         hbox_button.addWidget(self.button_save)
         hbox_button.addWidget(self.button_cancel)
 
-        group_service_information = QGroupBox("")
-        group_service_information.setLayout(form_layout_service)
+        group_information = QGroupBox("Личные данные")
+        group_information.setLayout(form_layout)
+
+
+
+
 
         #group_personal_information = QGroupBox("Личная информация")
         #group_personal_information.setLayout(form_layout_personal)
 
-        main_layout_vbox.addWidget(group_service_information)
+        main_layout_vbox.addWidget(group_information)
         main_layout_vbox.addWidget(QLabel("<span style='color: red;'>*</span> – поля, обязательные к заполнению"))
         #main_layout_vbox.addWidget(group_personal_information)
         main_layout_vbox.addLayout(hbox_button)
