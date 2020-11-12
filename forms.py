@@ -103,6 +103,8 @@ class FormTest(QWidget, FormIdMixin):
         self.edit_birth = QDateEdit()
         self.edit_passport = QLineEdit()
         self.edit_passport.setInputMask("99 99 999999;_")
+        self.edit_phone = QLineEdit()
+        self.edit_phone.setInputMask("+7 (999) 999-99-99;_")
         self.edit_start_date = QDateEdit()
         self.edit_education = QLineEdit()
 
@@ -110,9 +112,9 @@ class FormTest(QWidget, FormIdMixin):
         form_layout.addRow("Ф.И.О", self.edit_name)
         form_layout.addRow("Дата рождения", self.edit_birth)
         form_layout.addRow("Паспорт", self.edit_passport)
+        form_layout.addRow("Телефон", self.edit_phone)
         form_layout.addRow("Дата принятия на работу", self.edit_start_date)
         form_layout.addRow("Образование", self.edit_education)
-
 
 
 
@@ -127,15 +129,30 @@ class FormTest(QWidget, FormIdMixin):
         group_information.setLayout(form_layout)
 
 
+        vbox_button_post = QVBoxLayout()
+        button_new = QPushButton("+")
+        button_new.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
+        self.button_del = QPushButton("X")
+        self.button_del.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
+        vbox_button_post.addWidget(button_new)
+        vbox_button_post.addWidget(self.button_del)
+        vbox_button_post.addStretch(1)
 
+        self.table_post = QTableWidget()
+        self.table_post.setColumnCount(2)
+        self.table_post.verticalHeader().setVisible(False)
+        self.table_post.setRowCount(1)
 
+        hbox_post = QHBoxLayout()
+        hbox_post.addLayout(vbox_button_post, 1)
+        hbox_post.addWidget(self.table_post, 3)
 
-        #group_personal_information = QGroupBox("Личная информация")
-        #group_personal_information.setLayout(form_layout_personal)
+        group_post = QGroupBox()
+        group_post.setLayout(hbox_post)
 
         main_layout_vbox.addWidget(group_information)
         main_layout_vbox.addWidget(QLabel("<span style='color: red;'>*</span> – поля, обязательные к заполнению"))
-        #main_layout_vbox.addWidget(group_personal_information)
+        main_layout_vbox.addWidget(group_post)
         main_layout_vbox.addLayout(hbox_button)
         main_layout_vbox.addStretch(1)
 
